@@ -1,7 +1,7 @@
 const Progress = require('../models/Progress');
 const Course = require('../models/Course');
 
-const STAGE_SEQUENCE = ['tutor', 'exercise1', 'reverseTutor', 'exercise2', 'quiz', 'summary', 'completed'];
+const STAGE_SEQUENCE = ['tutor', 'practice', 'reverse', 'quiz', 'summary', 'completed'];
 
 async function getOrCreateProgress(userId, courseId) {
   let progress = await Progress.findOne({ userId, courseId });
@@ -52,8 +52,8 @@ async function failReverseTutor(userId, courseId, chapterId) {
 
   cp.currentStage = 'tutor';
   cp.stages.tutor = {};
-  cp.stages.exercise1 = {};
-  cp.stages.reverseTutor = {};
+  cp.stages.practice = {};
+  cp.stages.reverse = {};
 
   progress.markModified('chapterProgress');
   await progress.save();

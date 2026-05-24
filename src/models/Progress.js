@@ -11,16 +11,15 @@ const chapterProgressSchema = new mongoose.Schema({
   chapterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter', required: true },
   currentStage: {
     type: String,
-    enum: ['tutor', 'exercise1', 'reverseTutor', 'exercise2', 'quiz', 'summary', 'completed'],
+    enum: ['tutor', 'practice', 'reverse', 'quiz', 'summary', 'completed'],
     default: 'tutor',
   },
   stages: {
-    tutor:        { type: stageDataSchema, default: () => ({}) },
-    exercise1:    { type: stageDataSchema, default: () => ({}) },
-    reverseTutor: { type: stageDataSchema, default: () => ({}) },
-    exercise2:    { type: stageDataSchema, default: () => ({}) },
-    quiz:         { type: stageDataSchema, default: () => ({}) },
-    summary:      { type: stageDataSchema, default: () => ({}) },
+    tutor:    { type: stageDataSchema, default: () => ({}) },
+    practice: { type: stageDataSchema, default: () => ({}) },
+    reverse:  { type: stageDataSchema, default: () => ({}) },
+    quiz:     { type: stageDataSchema, default: () => ({}) },
+    summary:  { type: stageDataSchema, default: () => ({}) },
   },
 }, { _id: false });
 
