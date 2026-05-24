@@ -100,6 +100,25 @@ async function seed() {
   sarahDsaProgress.markModified('chapterProgress');
   await sarahDsaProgress.save();
 
+  // Pre-seed Alex: DSA chapter 1 at reverse tutor stage
+  console.log('Pre-seeding Alex at reverse tutor...');
+  const alex = userMap['demo@student.io'];
+  const alexDsaProgress = await Progress.findOne({ userId: alex._id, courseId: dsaCourse._id });
+  alexDsaProgress.chapterProgress[0] = {
+    chapterId: dsaChapters[0]._id,
+    currentStage: 'reverse',
+    stages: {
+      tutor:    { completed: true, completedAt: new Date() },
+      practice: { completed: true, completedAt: new Date(), score: 80 },
+      reverse:  {},
+      quiz:     {},
+      summary:  {},
+    },
+  };
+  alexDsaProgress.markModified('chapterProgress');
+  await alexDsaProgress.save();
+  await Streak.create({ userId: alex._id, currentStreak: 2, longestStreak: 4, lastActivityDate: new Date() });
+
   // Add streaks for demo accounts
   await Streak.create({ userId: sarah._id, currentStreak: 5, longestStreak: 7, lastActivityDate: new Date() });
   await Streak.create({ userId: userMap['jordan@student.io']._id, currentStreak: 3, longestStreak: 3, lastActivityDate: new Date() });

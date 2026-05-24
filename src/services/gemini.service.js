@@ -49,4 +49,34 @@ async function generateChat(systemPrompt, history, userMessage) {
   return result.response.text();
 }
 
-module.exports = { parseJsonResponse, generateContent, generateChat };
+async function* streamContent(prompt) {
+  const model = getModel();
+  const result = await withTimeout(model.generateContentStream(prompt));
+  for await (const chunk of result.stream) {
+    const t = chunk.text();
+    if (t) yield t;
+  }
+}
+
+function buildChatHistory(systemPrompt, history) {
+  return [
+    { role: 'user', parts: [{ text: systemPrompt }] },
+    { role: 'model', parts: [{ text: 'Understood. I am ready.' }] },
+    ...history.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    })),
+  ];
+}
+
+async function* streamChat(systemPrompt, history, userMessage) {
+  const model = getModel();
+  const chat = model.startChat({ history: buildChatHistory(systemPrompt, history) });
+  const result = await withTimeout(chat.sendMessageStream(userMessage));
+  for await (const chunk of result.stream) {
+    const t = chunk.text();
+    if (t) yield t;
+  }
+}
+
+module.exports = { parseJsonResponse, generateContent, generateChat, streamContent, streamChat };

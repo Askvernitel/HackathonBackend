@@ -1,7 +1,8 @@
 const Chapter = require('../models/Chapter');
-const { generateContent, parseJsonResponse } = require('../services/gemini.service');
+const { streamContent, generateContent, parseJsonResponse } = require('../services/gemini.service');
 const { buildExerciseGenPrompt } = require('../prompts/exerciseGen.prompt');
 const { buildExerciseGradePrompt } = require('../prompts/exerciseGrade.prompt');
+const { sendSSE } = require('../utils/sse');
 
 const asyncHandler = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
@@ -9,11 +10,7 @@ exports.generate = asyncHandler(async (req, res) => {
   const { chapterId, difficulty = 'medium' } = req.body;
   const chapter = await Chapter.findById(chapterId);
   if (!chapter) return res.status(404).json({ error: 'Chapter not found' });
-
-  const prompt = buildExerciseGenPrompt(chapter, difficulty);
-  const text = await generateContent(prompt);
-  const exercises = parseJsonResponse(text);
-  res.json(exercises);
+  sendSSE(res, streamContent(buildExerciseGenPrompt(chapter, difficulty)));
 });
 
 exports.grade = asyncHandler(async (req, res) => {
