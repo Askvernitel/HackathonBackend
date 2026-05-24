@@ -1,5 +1,16 @@
 const { getModel } = require('../config/gemini');
 
+const CALL_TIMEOUT_MS = 60000;
+
+function withTimeout(promise) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini call timed out after 60s')), CALL_TIMEOUT_MS)
+    ),
+  ]);
+}
+
 function parseJsonResponse(text) {
   const cleaned = text.replace(/```json|```/g, '').trim();
   const braceIdx = cleaned.indexOf('{');
@@ -9,10 +20,17 @@ function parseJsonResponse(text) {
   return JSON.parse(cleaned.slice(start));
 }
 
-async function generateContent(prompt) {
+async function generateContent(prompt, retries = 2) {
   const model = getModel();
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const result = await withTimeout(model.generateContent(prompt));
+      return result.response.text();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
 }
 
 async function generateChat(systemPrompt, history, userMessage) {
@@ -27,7 +45,7 @@ async function generateChat(systemPrompt, history, userMessage) {
       })),
     ],
   });
-  const result = await chat.sendMessage(userMessage);
+  const result = await withTimeout(chat.sendMessage(userMessage));
   return result.response.text();
 }
 

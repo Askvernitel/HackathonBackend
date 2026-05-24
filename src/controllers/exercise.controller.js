@@ -18,26 +18,22 @@ exports.generate = asyncHandler(async (req, res) => {
 
 exports.grade = asyncHandler(async (req, res) => {
   const { exercises, answers } = req.body;
-  const results = [];
 
-  for (let i = 0; i < exercises.length; i++) {
-    const ex = exercises[i];
+  const results = await Promise.all(exercises.map(async (ex, i) => {
     const answer = answers[i];
-
     if (ex.type === 'mcq') {
       const correct = answer === ex.correctIndex;
-      results.push({ score: correct ? 100 : 0, correct, feedback: ex.explanation });
-    } else {
-      const prompt = buildExerciseGradePrompt(ex.question, ex.idealAnswer, ex.expectedAnswerKeywords, answer);
-      try {
-        const text = await generateContent(prompt);
-        const graded = parseJsonResponse(text);
-        results.push({ ...graded, correct: graded.score >= 60 });
-      } catch {
-        results.push({ score: 50, feedback: 'Could not grade — good attempt!', correct: false });
-      }
+      return { score: correct ? 100 : 0, correct, feedback: ex.explanation };
     }
-  }
+    try {
+      const prompt = buildExerciseGradePrompt(ex.question, ex.idealAnswer, ex.expectedAnswerKeywords, answer);
+      const text = await generateContent(prompt);
+      const graded = parseJsonResponse(text);
+      return { ...graded, correct: graded.score >= 60 };
+    } catch {
+      return { score: 50, feedback: 'Could not grade — good attempt!', correct: false };
+    }
+  }));
 
   const totalScore = Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length);
   res.json({ results, totalScore, passed: totalScore >= 60 });

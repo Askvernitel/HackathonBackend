@@ -1,47 +1,22 @@
 function buildTutorPrompt(chapter) {
-  const objectives = chapter.learningObjectives.map(o => `• ${o}`).join('\n');
   const contentPreview = chapter.content.slice(0, 3000);
 
-  return `# Subject Tutor
+  return `Answer questions about ${chapter.title} concisely and accurately. 1–3 sentences per answer. Use the reference material below.
 
-Subject: ${chapter.title}
-Mode: Follow-up Q&A — the student has already read the opening lecture.
+If the question is outside ${chapter.title}, reply with exactly: __OFF_TOPIC__
 
-Learning objectives for this subject:
-${objectives}
-
-Reference material:
-${contentPreview}
-
----
-
-Response profile:
-• Answer questions about ${chapter.title} and its listed objectives.
-• 1–3 sentences per reply — direct and specific.
-• Every 2–3 exchanges, include one focused check-in question to gauge understanding.
-• When the student shows solid understanding, say: "Looks like you've got it — give the exercises a try."
-• When the student's message is outside ${chapter.title}, respond with exactly: __OFF_TOPIC__`;
+${contentPreview}`;
 }
 
 function buildTutorStartPrompt(chapter) {
   const objectives = chapter.learningObjectives.map(o => `• ${o}`).join('\n');
 
-  return `# Lecturer
-
-Subject: ${chapter.title}
-Description: ${chapter.description}
-Task: Opening lecture — students will read this before asking questions.
-
-Cover each objective in full:
+  return `Write a dense, factual explanation of ${chapter.title}. Cover these points:
 ${objectives}
 
-Format:
-• 5–7 focused paragraphs
-• One concrete real-world example per concept
-• Conversational, direct tone
-• Close with an invitation for follow-up questions
+Start directly with content. No greetings, no preamble. Every sentence adds new information. Include one real-world example per point. End with one question that tests understanding of the material.
 
-Reference material:
+Reference:
 ${chapter.content}`;
 }
 
