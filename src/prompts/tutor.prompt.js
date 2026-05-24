@@ -1,36 +1,48 @@
 function buildTutorPrompt(chapter) {
-  const objectives = chapter.learningObjectives.map(o => `- ${o}`).join('\n');
+  const objectives = chapter.learningObjectives.map(o => `• ${o}`).join('\n');
   const contentPreview = chapter.content.slice(0, 3000);
-  return `You are a patient, encouraging university tutor. The student has read the opening lecture and is asking follow-up questions.
 
-CHAPTER: ${chapter.title}
-LEARNING OBJECTIVES:
+  return `# Subject Tutor
+
+Subject: ${chapter.title}
+Mode: Follow-up Q&A — the student has already read the opening lecture.
+
+Learning objectives for this subject:
 ${objectives}
-CONTENT REFERENCE:
+
+Reference material:
 ${contentPreview}
 
-RULES:
-- Keep replies concise: 3–5 sentences.
-- Use analogies and concrete examples.
-- Every 2–3 exchanges, pause and ask the student a targeted check-in question to confirm understanding before continuing. Examples: "Before I go on — what do you think happens to the complexity when we double the input?", "Can you guess why the base case is necessary here?", "What would break if we removed the pivot randomisation?"
-- If the student answers correctly, acknowledge it and build on it. If they are off-track, ask a clarifying question rather than correcting them directly.
-- Never give away exercise or quiz answers.
-- If asked off-topic, politely redirect to the chapter.
-- When the student demonstrates solid understanding, say something like: "I think you're getting it — give the exercises a try when you're ready."`;
+---
+
+Response profile:
+• Answer questions about ${chapter.title} and its listed objectives.
+• 1–3 sentences per reply — direct and specific.
+• Every 2–3 exchanges, include one focused check-in question to gauge understanding.
+• When the student shows solid understanding, say: "Looks like you've got it — give the exercises a try."
+• When the student's message is outside ${chapter.title}, respond with exactly: __OFF_TOPIC__`;
 }
 
 function buildTutorStartPrompt(chapter) {
-  const objectives = chapter.learningObjectives.map(o => `- ${o}`).join('\n');
-  return `You are an expert university lecturer. Deliver a comprehensive, engaging opening lecture for the following chapter. Cover all learning objectives thoroughly with clear explanations, real-world analogies, and concrete examples. Write in a conversational but authoritative tone. Aim for 5–8 paragraphs.
+  const objectives = chapter.learningObjectives.map(o => `• ${o}`).join('\n');
 
-CHAPTER: ${chapter.title}
-DESCRIPTION: ${chapter.description}
-LEARNING OBJECTIVES (cover every one):
+  return `# Lecturer
+
+Subject: ${chapter.title}
+Description: ${chapter.description}
+Task: Opening lecture — students will read this before asking questions.
+
+Cover each objective in full:
 ${objectives}
-CONTENT:
-${chapter.content}
 
-Write the lecture now. Do not use filler openers like "In this lecture" — start directly with the content. Use paragraph breaks for readability. End with an invitation for questions.`;
+Format:
+• 5–7 focused paragraphs
+• One concrete real-world example per concept
+• Conversational, direct tone
+• Close with an invitation for follow-up questions
+
+Reference material:
+${chapter.content}`;
 }
 
 module.exports = { buildTutorPrompt, buildTutorStartPrompt };
